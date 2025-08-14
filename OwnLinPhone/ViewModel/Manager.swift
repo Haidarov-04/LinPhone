@@ -14,11 +14,20 @@ final class LinphoneManager: ObservableObject {
     // MARK: - Published (UI)
     @Published var currentIncomingCall: OpaquePointer?
     @Published var callDuration: String = "00:00"
-    @Published var isCallActive: Bool = false
+    @Published var isCallActive: Bool = false{
+        didSet{
+            if isCallActive{
+                calling = ""
+            }
+        }
+    }
     @Published var isMicMuted: Bool = false
     @Published var isSpeakerOn: Bool = false
     @Published var isRegistered: Bool = false
     @Published var lastRegistrationMessage: String?
+    @Published var caller = ""
+    @Published var calling = ""
+    
 
     // MARK: - Core
     static let shared = LinphoneManager()
@@ -179,6 +188,7 @@ final class LinphoneManager: ObservableObject {
         }
         if let call = linphone_core_get_current_call(core) {
             linphone_core_accept_call(core, call)
+            self.calling = ""
         }
     }
 
@@ -283,12 +293,24 @@ final class LinphoneManager: ObservableObject {
              LinphoneCallStatePushIncomingReceived:
             guard callDir == LinphoneCallIncoming else { return }
              guard CallManager.shared.currentCallUUID == nil else { return }
-             
+           
+            if let remoteAddress = linphone_call_get_remote_address(call) {
+                     
+                     if let displayName = linphone_address_get_display_name(remoteAddress) {
+                         calling = "From: \((String(cString: displayName)))"
+                     }
+                 }
                  CallManager.shared.reportIncomingCall(handle: "User") { }
 
         case LinphoneCallStateConnected,
              LinphoneCallStateStreamsRunning:
             print("📞 Call active (media/connected)")
+            if let remoteAddress = linphone_call_get_remote_address(call) {
+                     
+                     if let displayName = linphone_address_get_display_name(remoteAddress) {
+                         caller = (String(cString: displayName))
+                     }
+                 }
             startCallTimer()
             DispatchQueue.main.async { self.isCallActive = true }
 
@@ -311,6 +333,8 @@ final class LinphoneManager: ObservableObject {
                 self.isCallActive = false
                 self.callDuration = "00:00"
                 CallManager.shared.callDidEnd()
+                self.caller = ""
+                self.calling = ""
             }
             delegate?.callEnded()
 

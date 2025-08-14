@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 
 class LoginViewController: UIViewController {
@@ -14,15 +15,27 @@ class LoginViewController: UIViewController {
     private let domainField = UITextField()
     private let registerButton = UIButton(type: .system)
     private let statusLabel = UILabel()
+    let loading = UIActivityIndicatorView(style: .medium)
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .blue
+        view.backgroundColor = .gray
         setupUI()
         LinphoneManager.shared.start()
     }
 
     private func setupUI() {
+        loading.color = .white
+        loading.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(loading)
+
+        NSLayoutConstraint.activate([
+            loading.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -200),
+            loading.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+        
         usernameField.placeholder = "SIP username (e.g. 6001)"
         usernameField.text = "10111"
         usernameField.borderStyle = .roundedRect
@@ -35,12 +48,13 @@ class LoginViewController: UIViewController {
         passwordField.isSecureTextEntry = true
 
         domainField.placeholder = "Domain or IP (e.g. 192.168.0.10)"
-        domainField.text = "192.168.137.156"
+        domainField.text = "192.168.43.47"
         
         domainField.borderStyle = .roundedRect
         domainField.autocapitalizationType = .none
 
         registerButton.setTitle("Register", for: .normal)
+        registerButton.setTitleColor(.white, for: .normal)
         registerButton.addTarget(self, action: #selector(registerTapped), for: .touchUpInside)
 
         statusLabel.text = "Not registered"
@@ -58,6 +72,9 @@ class LoginViewController: UIViewController {
             stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
             stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+        
+       
+    
     }
 
     @objc private func registerTapped() {
@@ -66,17 +83,21 @@ class LoginViewController: UIViewController {
         let domain = domainField.text ?? ""
         statusLabel.text = "Registering..."
         registerButton.isEnabled = false
+        loading.startAnimating()
 
         LinphoneManager.shared.registerAccount(username: user, password: pass, domain: domain){ succes in
-            
+            self.loading.stopAnimating()
             if succes {
                 self.statusLabel.text = "Registered: \(user)@\(domain)"
                 // push Call screen
-                let callVC = CallViewController(callerID: user, domain: domain)
+                let callVC = UIHostingController(rootView: CallView(domen: domain, user: user))
                 self.navigationController?.pushViewController(callVC, animated: true)
                 print("registration succes")
             }else{
                 print("registration failure")
+                self.statusLabel.text = "Registration: failure"
+                self.registerButton.isEnabled = true
+                
             }
         }
     }
