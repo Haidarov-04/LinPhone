@@ -87,6 +87,7 @@ class LoginViewController: UIViewController {
 
         LinphoneManager.shared.registerAccount(username: user, password: pass, domain: domain){ succes in
             self.loading.stopAnimating()
+            self.registerButton.isEnabled = true
             if succes {
                 self.statusLabel.text = "Registered: \(user)@\(domain)"
                 // push Call screen
@@ -96,7 +97,7 @@ class LoginViewController: UIViewController {
             }else{
                 print("registration failure")
                 self.statusLabel.text = "Registration: failure"
-                self.registerButton.isEnabled = true
+                
                 
             }
         }
