@@ -21,5 +21,19 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+		<string>audio</string>
+		<string>push-to-talk</string>
+		<string>voip</string>
+		<string>remote-notification</string>
+		<string>bluetooth-central</string>
+		<string>location</string>
+		<string>external-accessory</string>
+		<string>bluetooth-peripheral</string>
+		<string>nearby-interaction</string>
+	</array>
 </dict>
 </plist>
